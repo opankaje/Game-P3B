@@ -25,6 +25,7 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
     protected ImageView ivGameScreen;
     protected Bitmap bitmap;
     protected Canvas canvas;
+    protected Player bos;
     protected UIThreadedWrapper uiThreadedWrapper;
     protected boolean initiated;
     protected GameThread movePlayerThread;
@@ -57,16 +58,14 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         this.uiThreadedWrapper=new UIThreadedWrapper(this);
         this.ivGameScreen.setOnTouchListener(this);
         this.midXCanvas = 0;
+
         this.tvStart = view.findViewById(R.id.tv_start);
         this.tvStart.setOnClickListener(this);
         this.gerak = false;
+        this.initiated = true;
         return view;
     }
 
-    public void test(){
-        GameThread objTest=new GameThread(this.uiThreadedWrapper);
-        objTest.runThread();
-    }
 
     public void setInitiatedCanvas(){
         //create bitmap
@@ -88,7 +87,8 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         Log.d("debug", "posisi y: " + canvas.getHeight());
 
         this.player = new Player(x,y);
-        this.movePlayerThread = new GameThread(this.uiThreadedWrapper);
+        this.bos = new Player(this.xBos,10);
+        this.movePlayerThread = new GameThread(this.uiThreadedWrapper,bos);
 
         //reset canvas
         this.midXCanvas = this.canvas.getWidth()/2;
@@ -107,13 +107,12 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
 
         canvas.drawBitmap(bitmap,x,y,paint);
         canvas.drawBitmap(bitmap1,xBos,10,paint);
-        test();
+        runThread();
 
     }
 
     public void runThread(){
-        GameThread thread = new GameThread(this.uiThreadedWrapper);
-        thread.runThread();
+        this.movePlayerThread.runThread();
     }
 
     public void resetCanvas(){
@@ -168,7 +167,24 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
     public void onClick(View view) {
         if(view.getId() == this.tvStart.getId()) {
             this.tvStart.setText("");
+            initiated = false;
+            ibPause.setImageResource(android.R.drawable.ic_media_pause);
             this.setInitiatedCanvas();
+        }
+        if(view.getId() == this.ibPause.getId()){
+            if(initiated ==false){
+                ibPause.setImageResource(android.R.drawable.ic_media_play);
+                initiated = true;
+                this.movePlayerThread.tanda =false;
+                Log.d("test","play");
+            }else {
+                ibPause.setImageResource(android.R.drawable.ic_media_pause);
+                initiated = false;
+                movePlayerThread.tanda =true;
+                Log.d("test","pause");
+
+            }
+
         }
     }
 
@@ -187,14 +203,12 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
                 Log.d("touch_listener", "down");
                 break;
             case MotionEvent.ACTION_UP:
-                runThread();
 //                this.movePlayerThread.moveLeft = false;
 //                this.movePlayerThread.moveRight = false;
                 Log.d("touch_listener", "up");
                 break;
             case MotionEvent.ACTION_MOVE:
                 if(motionEvent.getX() >= this.midXCanvas) {
-                    //runThread();
                 }
                 Log.d("touch_listener", "move");
                 break;

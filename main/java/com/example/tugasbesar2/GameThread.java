@@ -1,16 +1,19 @@
 package com.example.tugasbesar2;
 
-import java.util.Random;
+
+import android.util.Log;
 
 public class GameThread implements Runnable{
     protected Thread thread;
     protected UIThreadedWrapper uiThreadedWrapper;
-    protected boolean moveLeft;
-    protected boolean moveRight;
+    protected boolean tanda;
+    protected Player player;
 
-    public GameThread (UIThreadedWrapper uiThreadedWrapper){
+    public GameThread (UIThreadedWrapper uiThreadedWrapper,Player player){
         this.uiThreadedWrapper=uiThreadedWrapper;
         this.thread=new Thread(this);
+        this.player = player;
+        tanda =true;
     }
 
     public void runThread(){
@@ -18,19 +21,31 @@ public class GameThread implements Runnable{
     }
 
     @Override
-    public void run(){
-        for (int i=0;i<1000;i+=0){
-            try {
-                Thread.sleep(40);
-                Player player = new Player(10,0);
-                this.uiThreadedWrapper.setPlayer1(player);
-            }catch (InterruptedException e){
-                e.printStackTrace();
+    public void run() {
+            while (!thread.isInterrupted()) {
+                if(tanda == true){
+                    try {
+                        Thread.sleep(40);
+                        player.setX(10);
+                        player.setY(0);
+                        this.uiThreadedWrapper.setPlayer1(player);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    Log.d("status tanda", tanda + " ");
+                }
             }
-        }
-}
-
-    public void pauseThread() {
-
     }
+
+    public void pause() {
+        thread.interrupt();
+    }
+
+    public void startLagi(){
+        thread.run();
+    }
+
 }
+
