@@ -16,7 +16,7 @@ public class UIThreadedWrapper extends Handler {
             this.fragmentGameplay.setPlayer(player);
         }
     }
-    public void setPlayer(Player player){
+    public void setPlayer1(Player player){
         Message msg=new Message();
         msg.what=MSG_SET_PLAYER;
         msg.obj=player;

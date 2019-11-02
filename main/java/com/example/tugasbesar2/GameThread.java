@@ -1,5 +1,7 @@
 package com.example.tugasbesar2;
 
+import java.util.Random;
+
 public class GameThread implements Runnable{
     protected Thread thread;
     protected UIThreadedWrapper uiThreadedWrapper;
@@ -17,14 +19,16 @@ public class GameThread implements Runnable{
 
     @Override
     public void run(){
-        if(this.moveLeft == true) {
-
+        for (int i=0;i<1000;i+=0){
+            try {
+                Thread.sleep(40);
+                Player player = new Player(10,0);
+                this.uiThreadedWrapper.setPlayer1(player);
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
-        else if(this.moveRight == true) {
-            Player player = new Player(10,0);
-            this.uiThreadedWrapper.setPlayer(player);
-        }
-    }
+}
 
     public void pauseThread() {
 
