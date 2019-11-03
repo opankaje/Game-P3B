@@ -2,16 +2,22 @@ package com.example.tugasbesar2;
 
 import android.util.Log;
 
+import java.util.ArrayList;
+
 public class BulletThread implements Runnable{
     protected Thread thread;
     protected UIThreadedWrapper uiThreadedWrapper;
+    protected ArrayList<Bullet> bullets;
     protected boolean tanda;
-    protected Bullet bullet;
+    protected Player player;
+    protected int ukuranCanvas;
 
-    public BulletThread (UIThreadedWrapper uiThreadedWrapper,Bullet bullet){
+    public BulletThread (UIThreadedWrapper uiThreadedWrapper, ArrayList bullets,Player player,int ukuranCanvas){
         this.uiThreadedWrapper=uiThreadedWrapper;
         this.thread=new Thread(this);
-        this.bullet=bullet;
+        this.player = player;
+        this.bullets = bullets;
+        this.ukuranCanvas = ukuranCanvas;
         tanda =true;
     }
 
@@ -23,10 +29,19 @@ public class BulletThread implements Runnable{
     public void run() {
         while (!thread.isInterrupted()) {
             if(tanda == true){
+
+                for (int i = 0; i < this.bullets.size(); i++) {
+                    if(this.bullets.get(i).getY()>ukuranCanvas){
+                        this.bullets.remove(i);
+                        continue;
+                    }
+                    this.bullets.get(i).setY(this.bullets.get(i).getY() + 200);
+                }
+                this.uiThreadedWrapper.setArrBullet(this.bullets);
+
                 try {
-                    Thread.sleep(40);
-                    bullet.setX(0);
-                    bullet.setY(10);
+                    Thread.sleep(500);
+                    Bullet bullet = new Bullet(player.getX(),player.getY());
                     this.uiThreadedWrapper.setBullet1(bullet);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -38,8 +53,12 @@ public class BulletThread implements Runnable{
         }
     }
 
-    public void pause() {
-        thread.interrupt();
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public void setBullets(ArrayList<Bullet> bullets) {
+        this.bullets = bullets;
     }
 
     public void startLagi(){

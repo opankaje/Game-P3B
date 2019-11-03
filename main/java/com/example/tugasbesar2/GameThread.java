@@ -39,13 +39,5 @@ public class GameThread implements Runnable{
             }
     }
 
-    public void pause() {
-        thread.interrupt();
-    }
-
-    public void startLagi(){
-        thread.run();
-    }
-
 }
 

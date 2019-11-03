@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,13 +19,17 @@ import android.widget.TextView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
-public class FragmentGameplay extends Fragment implements View.OnClickListener {
+import java.util.ArrayList;
+
+public class FragmentGameplay extends Fragment implements View.OnClickListener, View.OnTouchListener {
     protected TextView tvLivesRem;
     protected TextView tvStart;
     protected ImageButton ibPause;
     protected ImageView ivGameScreen;
     protected Bitmap bitmap;
     protected Canvas canvas;
+    protected Player bos;
+    protected Paint paint;
     protected UIThreadedWrapper uiThreadedWrapper;
     protected boolean initiated;
     protected GameThread movePlayerThread;
@@ -32,6 +37,12 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener {
     public int midXCanvas;
     protected int x;
     protected int y;
+    protected int xBos;
+    protected int yBos;
+    protected int yPeluru;
+    protected boolean gerak;
+    protected BulletThread bulletThread;
+    ArrayList<Bullet> bullets;
 
     public FragmentGameplay() {
         //empty constructor
@@ -51,12 +62,17 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener {
         this.ivGameScreen = view.findViewById(R.id.ivGame);
         this.ibPause.setOnClickListener(this);
         this.uiThreadedWrapper=new UIThreadedWrapper(this);
+        this.ivGameScreen.setOnTouchListener(this);
         this.midXCanvas = 0;
+        this.bullets = new ArrayList<>();
+
         this.tvStart = view.findViewById(R.id.tv_start);
         this.tvStart.setOnClickListener(this);
-
+        this.gerak = false;
+        this.initiated = true;
         return view;
     }
+
 
     public void setInitiatedCanvas(){
         //create bitmap
@@ -70,85 +86,151 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener {
         //create canvas
         this.canvas = new Canvas(bitmap);
 
-        this.x =(canvas.getWidth()/2)-220;
-        this.y =canvas.getHeight()-420;
-        int x1 =(canvas.getWidth()/2)-150;
+        //initiate paint
+        this.paint = new Paint();
+        int warna = ResourcesCompat.getColor(getResources(),R.color.white,null);
+        this.paint.setColor(warna);
+
+        this.x =(ivGameScreen.getWidth()/2-150);
+        this.y =canvas.getHeight()-300;
+        this.xBos =(canvas.getWidth()/2)-150;
+        this.yPeluru=(canvas.getWidth()/2)-150;
         Log.d("debug", "posisi x: " + canvas.getWidth());
         Log.d("debug", "posisi y: " + canvas.getHeight());
 
         this.player = new Player(x,y);
-        this.movePlayerThread = new GameThread(this.uiThreadedWrapper, player);
+        this.bos = new Player(this.xBos,10);
+        this.movePlayerThread = new GameThread(this.uiThreadedWrapper,bos);
+        this.bulletThread = new BulletThread(uiThreadedWrapper,bullets,bos,canvas.getHeight());
 
         //reset canvas
-        this.midXCanvas = this.canvas.getWidth()/2;
         resetCanvas();
-
-        this.bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.player);
-
 
         Log.d("debug", "bitmap: " + bitmap.getWidth());
         Log.d("debug", "bitmap: " + bitmap.getHeight());
 
 
-        Bitmap bitmap1= Bitmap.createBitmap(ivGameScreen.getWidth(),ivGameScreen.getHeight(),
-                Bitmap.Config.ARGB_8888);
-        bitmap1=BitmapFactory.decodeResource(getResources(),R.drawable.bos);
-        Paint paint = new Paint();
-        canvas.drawBitmap(bitmap,x,y,paint);
-        canvas.drawBitmap(bitmap1,x1,10,paint);
-        //runThread();
+        gambarPlayer(x,y);
+        gambarBos(xBos,10);
+        runThread();
 
     }
 
     public void runThread(){
-        GameThread thread = new GameThread(this.uiThreadedWrapper, player);
-        thread.runThread();
+        this.movePlayerThread.runThread();
+        this.bulletThread.runThread();
     }
 
     public void resetCanvas(){
         //create game background
-        int background = ResourcesCompat.getColor(getResources(),
-                R.color.hitam,null);
-        canvas.drawColor(background);
-
-//        Paint paint = new Paint();
-//        int mColorTest=ResourcesCompat.getColor(getResources(),R.color.hitam,null);
-//        paint.setColor(mColorTest);
-//        canvas.drawCircle(x, y, 150, paint);
-
+        canvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
         //force draw
         this.ivGameScreen.invalidate();
+    }
 
-//        Point a= new Point(canvas.getWidth()/2,canvas.getHeight()-150);
-//        Point b= new Point(125, 275);
-//        Point c= new Point(275, 275);
-//        Path path= new Path();
-//        path.moveTo(a.x, a.y);
-//        path.lineTo(b.x,b.y);
-//        path.lineTo(c.x,c.y);
-//        path.lineTo(a.x,a.y);
-//        canvas.drawPath(path,paint);
+    public void gambarPeluru(int x,int y){
+        this.canvas.drawCircle(x,y,20,paint);
+    }
 
+    public void gambarBos(int x,int y){
+        Bitmap bos;
+        bos = BitmapFactory.decodeResource(getResources(),R.drawable.bos);
+
+        canvas.drawBitmap(bos,x,y,paint);
+    }
+
+    public void gambarPlayer(int x, int y){
+        Bitmap player;
+        player = BitmapFactory.decodeResource(getResources(),R.drawable.player);
+        this.canvas.drawBitmap(player,x,y,paint);
     }
 
     public void setPlayer(Player player){
+
+        //menggerakan bos
+        if(gerak == false && this.xBos+170 < ivGameScreen.getWidth()){
+            this.xBos+= player.getX();
+
+        }else
+        {
+            gerak = true;
+        }
+
+        if(gerak == true && this.xBos > 0 ){
+            this.xBos-=player.getX();
+        }
+        else{
+            gerak=false;
+        }
+
         resetCanvas();
-
-        //ambil nilai x dan y dari thread
-        this.x += player.getX();
-
-        //menggerakan lingkaran
-        Paint paint = new Paint();
-        int mColorTest=ResourcesCompat.getColor(getResources(),R.color.hitam,null);
-        paint.setColor(mColorTest);
-        //canvas.drawCircle(x, y, 150, paint);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        gambarBos(xBos,yBos);
+        gambarPlayer(x+mainActivity.gerakKiriKanan(),y);
+        Player player1 = new Player(xBos,10);
+        this.bulletThread.setPlayer(player1);
+        for (int i = 0 ; i < this.bullets.size();i++){
+            gambarPeluru(this.bullets.get(i).getX(),this.bullets.get(i).getY());
+        }
     }
+
+    public void setArrBulList(ArrayList<Bullet> bulList){
+        this.bullets = bulList;
+    }
+
+    public void setPelor(Bullet bullet){
+        this.bullets.add(bullet);
+
+    }
+
     @Override
     public void onClick(View view) {
         if(view.getId() == this.tvStart.getId()) {
             this.tvStart.setText("");
+            initiated = false;
+            ibPause.setImageResource(android.R.drawable.ic_media_pause);
             this.setInitiatedCanvas();
         }
+        if(view.getId() == this.ibPause.getId()){
+            if(initiated ==false){
+                ibPause.setImageResource(android.R.drawable.ic_media_play);
+                initiated = true;
+                this.movePlayerThread.tanda =false;
+                this.bulletThread.tanda = false;
+                Log.d("test","play");
+            }else {
+                ibPause.setImageResource(android.R.drawable.ic_media_pause);
+                initiated = false;
+                movePlayerThread.tanda =true;
+                this.bulletThread.tanda =true;
+                Log.d("test","pause");
+
+            }
+
+        }
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        switch(motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                if(motionEvent.getX() <= this.midXCanvas) {
+                }
+                else if(motionEvent.getX() > this.midXCanvas) {
+                }
+                Log.d("touch_listener", "down");
+                break;
+            case MotionEvent.ACTION_UP:
+                Log.d("touch_listener", "up");
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if(motionEvent.getX() >= this.midXCanvas) {
+                }
+                Log.d("touch_listener", "move");
+                break;
+        }
+        return true;
     }
 }
+
