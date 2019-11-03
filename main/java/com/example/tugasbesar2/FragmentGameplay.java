@@ -18,7 +18,7 @@ import android.widget.TextView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
-public class FragmentGameplay extends Fragment implements View.OnClickListener, View.OnTouchListener {
+public class FragmentGameplay extends Fragment implements View.OnClickListener {
     protected TextView tvLivesRem;
     protected TextView tvStart;
     protected ImageButton ibPause;
@@ -51,7 +51,6 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         this.ivGameScreen = view.findViewById(R.id.ivGame);
         this.ibPause.setOnClickListener(this);
         this.uiThreadedWrapper=new UIThreadedWrapper(this);
-        this.ivGameScreen.setOnTouchListener(this);
         this.midXCanvas = 0;
         this.tvStart = view.findViewById(R.id.tv_start);
         this.tvStart.setOnClickListener(this);
@@ -78,7 +77,7 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         Log.d("debug", "posisi y: " + canvas.getHeight());
 
         this.player = new Player(x,y);
-        this.movePlayerThread = new GameThread(this.uiThreadedWrapper);
+        this.movePlayerThread = new GameThread(this.uiThreadedWrapper, player);
 
         //reset canvas
         this.midXCanvas = this.canvas.getWidth()/2;
@@ -102,7 +101,7 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
     }
 
     public void runThread(){
-        GameThread thread = new GameThread(this.uiThreadedWrapper);
+        GameThread thread = new GameThread(this.uiThreadedWrapper, player);
         thread.runThread();
     }
 
@@ -151,37 +150,5 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
             this.tvStart.setText("");
             this.setInitiatedCanvas();
         }
-    }
-
-    @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        switch(motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                if(motionEvent.getX() <= this.midXCanvas) {
-                    this.movePlayerThread.moveLeft = true;
-                    this.movePlayerThread.moveRight = false;
-                    runThread();
-                }
-                else if(motionEvent.getX() > this.midXCanvas) {
-                    this.movePlayerThread.moveRight = true;
-                    this.movePlayerThread.moveLeft = false;
-                    runThread();
-                }
-                Log.d("touch_listener", "down");
-                break;
-            case MotionEvent.ACTION_UP:
-                //runThread();
-                this.movePlayerThread.moveLeft = false;
-                this.movePlayerThread.moveRight = false;
-                Log.d("touch_listener", "up");
-                break;
-            case MotionEvent.ACTION_MOVE:
-                if(motionEvent.getX() >= this.midXCanvas) {
-                    //runThread();
-                }
-                Log.d("touch_listener", "move");
-                break;
-        }
-        return true;
     }
 }
