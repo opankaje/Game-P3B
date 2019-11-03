@@ -25,7 +25,6 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
     protected ImageView ivGameScreen;
     protected Bitmap bitmap;
     protected Canvas canvas;
-    protected Player bos;
     protected UIThreadedWrapper uiThreadedWrapper;
     protected boolean initiated;
     protected GameThread movePlayerThread;
@@ -33,12 +32,6 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
     public int midXCanvas;
     protected int x;
     protected int y;
-    protected int xBos;
-    protected int yBos;
-    protected int yPeluru;
-    protected int xPeluru;
-    protected boolean gerak;
-    private BulletThread bulletThread;
 
     public FragmentGameplay() {
         //empty constructor
@@ -60,14 +53,11 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         this.uiThreadedWrapper=new UIThreadedWrapper(this);
         this.ivGameScreen.setOnTouchListener(this);
         this.midXCanvas = 0;
-
         this.tvStart = view.findViewById(R.id.tv_start);
         this.tvStart.setOnClickListener(this);
-        this.gerak = false;
-        this.initiated = true;
+
         return view;
     }
-
 
     public void setInitiatedCanvas(){
         //create bitmap
@@ -81,18 +71,14 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         //create canvas
         this.canvas = new Canvas(bitmap);
 
-        this.yPeluru=60;
-        this.x =(ivGameScreen.getWidth()/2-150);
-        this.y =canvas.getHeight()-300;
-        this.xBos =(canvas.getWidth()/2)-150;
+        this.x =(canvas.getWidth()/2)-220;
+        this.y =canvas.getHeight()-420;
+        int x1 =(canvas.getWidth()/2)-150;
         Log.d("debug", "posisi x: " + canvas.getWidth());
         Log.d("debug", "posisi y: " + canvas.getHeight());
 
         this.player = new Player(x,y);
-        this.bos = new Player(this.xBos,10);
-        Bullet bullet = new Bullet(this.xBos, 10);
-        this.movePlayerThread = new GameThread(this.uiThreadedWrapper,bos);
-        this.bulletThread = new BulletThread(this.uiThreadedWrapper, bullet);
+        this.movePlayerThread = new GameThread(this.uiThreadedWrapper);
 
         //reset canvas
         this.midXCanvas = this.canvas.getWidth()/2;
@@ -105,19 +91,19 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         Log.d("debug", "bitmap: " + bitmap.getHeight());
 
 
-        Bitmap bitmap1;
+        Bitmap bitmap1= Bitmap.createBitmap(ivGameScreen.getWidth(),ivGameScreen.getHeight(),
+                Bitmap.Config.ARGB_8888);
         bitmap1=BitmapFactory.decodeResource(getResources(),R.drawable.bos);
         Paint paint = new Paint();
-
         canvas.drawBitmap(bitmap,x,y,paint);
-        canvas.drawBitmap(bitmap1,xBos,10,paint);
-        runThread();
+        canvas.drawBitmap(bitmap1,x1,10,paint);
+        //runThread();
 
     }
 
     public void runThread(){
-        this.movePlayerThread.runThread();
-        this.bulletThread.runThread();
+        GameThread thread = new GameThread(this.uiThreadedWrapper);
+        thread.runThread();
     }
 
     public void resetCanvas(){
@@ -126,72 +112,44 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
                 R.color.hitam,null);
         canvas.drawColor(background);
 
+//        Paint paint = new Paint();
+//        int mColorTest=ResourcesCompat.getColor(getResources(),R.color.hitam,null);
+//        paint.setColor(mColorTest);
+//        canvas.drawCircle(x, y, 150, paint);
+
+
         //force draw
         this.ivGameScreen.invalidate();
+
+//        Point a= new Point(canvas.getWidth()/2,canvas.getHeight()-150);
+//        Point b= new Point(125, 275);
+//        Point c= new Point(275, 275);
+//        Path path= new Path();
+//        path.moveTo(a.x, a.y);
+//        path.lineTo(b.x,b.y);
+//        path.lineTo(c.x,c.y);
+//        path.lineTo(a.x,a.y);
+//        canvas.drawPath(path,paint);
+
     }
 
     public void setPlayer(Player player){
-
-        //ambil nilai x dan y dari thread
-//        int x = xBos;
-        //menggerakan bos
-        if(gerak == false && this.xBos+250 < ivGameScreen.getWidth()){
-            this.xBos+= player.getX();
-        }else
-        {
-            gerak = true;
-        }
-
-        if(gerak == true && this.xBos > 0 ){
-            this.xBos-=player.getX();
-        }
-        else{
-            gerak=false;
-        }
-
         resetCanvas();
 
-        Bitmap bitmap1;
-        bitmap1=BitmapFactory.decodeResource(getResources(),R.drawable.bos);
+        //ambil nilai x dan y dari thread
+        this.x += player.getX();
+
+        //menggerakan lingkaran
         Paint paint = new Paint();
-        canvas.drawBitmap(bitmap1,xBos,yBos,paint);
-
-
-
-        this.bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.player);
-        canvas.drawBitmap(this.bitmap,this.x,this.y,paint);
+        int mColorTest=ResourcesCompat.getColor(getResources(),R.color.hitam,null);
+        paint.setColor(mColorTest);
+        //canvas.drawCircle(x, y, 150, paint);
     }
-
-    public void setPeluru(int x, int y){
-        yPeluru += y;
-        Paint paint1 = new Paint();
-        int warnPel = ResourcesCompat.getColor(getResources(),R.color.white,null);
-        paint1.setColor(warnPel);
-        canvas.drawCircle(x,yPeluru,20,paint1);
-    }
-
     @Override
     public void onClick(View view) {
         if(view.getId() == this.tvStart.getId()) {
             this.tvStart.setText("");
-            initiated = false;
-            ibPause.setImageResource(android.R.drawable.ic_media_pause);
             this.setInitiatedCanvas();
-        }
-        if(view.getId() == this.ibPause.getId()){
-            if(initiated ==false){
-                ibPause.setImageResource(android.R.drawable.ic_media_play);
-                initiated = true;
-                this.movePlayerThread.tanda =false;
-                Log.d("test","play");
-            }else {
-                ibPause.setImageResource(android.R.drawable.ic_media_pause);
-                initiated = false;
-                movePlayerThread.tanda =true;
-                Log.d("test","pause");
-
-            }
-
         }
     }
 
@@ -200,22 +158,26 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         switch(motionEvent.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 if(motionEvent.getX() <= this.midXCanvas) {
-//                    this.movePlayerThread.moveLeft = true;
-//                    this.movePlayerThread.moveRight = false;
+                    this.movePlayerThread.moveLeft = true;
+                    this.movePlayerThread.moveRight = false;
+                    runThread();
                 }
                 else if(motionEvent.getX() > this.midXCanvas) {
-//                    this.movePlayerThread.moveRight = true;
-//                    this.movePlayerThread.moveLeft = false;
+                    this.movePlayerThread.moveRight = true;
+                    this.movePlayerThread.moveLeft = false;
+                    runThread();
                 }
                 Log.d("touch_listener", "down");
                 break;
             case MotionEvent.ACTION_UP:
-//                this.movePlayerThread.moveLeft = false;
-//                this.movePlayerThread.moveRight = false;
+                //runThread();
+                this.movePlayerThread.moveLeft = false;
+                this.movePlayerThread.moveRight = false;
                 Log.d("touch_listener", "up");
                 break;
             case MotionEvent.ACTION_MOVE:
                 if(motionEvent.getX() >= this.midXCanvas) {
+                    //runThread();
                 }
                 Log.d("touch_listener", "move");
                 break;
