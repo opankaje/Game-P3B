@@ -16,6 +16,7 @@ public class BulletThread implements Runnable{
         this.uiThreadedWrapper=uiThreadedWrapper;
         this.thread=new Thread(this);
         this.player = player;
+
         this.bullets = bullets;
         this.ukuranCanvas = ukuranCanvas;
         tanda =true;
@@ -35,13 +36,13 @@ public class BulletThread implements Runnable{
                         this.bullets.remove(i);
                         continue;
                     }
-                    this.bullets.get(i).setY(this.bullets.get(i).getY() + 200);
+                    this.bullets.get(i).setY(this.bullets.get(i).getY() - 500);
                 }
                 this.uiThreadedWrapper.setArrBullet(this.bullets);
 
                 try {
                     Thread.sleep(500);
-                    Bullet bullet = new Bullet(player.getX(),player.getY());
+                    Bullet bullet = new Bullet(player.getX()+220,1600);
                     this.uiThreadedWrapper.setBullet1(bullet);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

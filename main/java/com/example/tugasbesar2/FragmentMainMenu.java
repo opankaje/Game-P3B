@@ -16,7 +16,6 @@ import android.widget.Button;
 public class FragmentMainMenu extends Fragment implements View.OnClickListener{
 
     protected Button play;
-    protected Button setting;
     protected Button exit;
     protected FragmentCommunication fragmentCommunication;
 
@@ -47,13 +46,11 @@ public class FragmentMainMenu extends Fragment implements View.OnClickListener{
 
         // atribut initialitation
          this.play = view.findViewById(R.id.btnplay);
-         this.setting = view.findViewById(R.id.btnset);
          this.exit = view.findViewById(R.id.btnext);
          this.fragmentCommunication = (MainActivity)getActivity();
 
          // set on click
          this.play.setOnClickListener(this);
-         this.setting.setOnClickListener(this);
          this.exit.setOnClickListener(this);
 
         return view;
@@ -62,8 +59,10 @@ public class FragmentMainMenu extends Fragment implements View.OnClickListener{
     @Override
     public void onClick(View view){
         if(view.getId() == this.play.getId()){
-            Log.d("tes","jalan");
             fragmentCommunication.changePage("playGame");
+        }
+        else if(view.getId() == this.exit.getId()){
+            fragmentCommunication.closeApp();
         }
     }
 

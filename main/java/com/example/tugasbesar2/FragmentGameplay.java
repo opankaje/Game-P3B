@@ -21,9 +21,10 @@ import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 
-public class FragmentGameplay extends Fragment implements View.OnClickListener, View.OnTouchListener {
+public class FragmentGameplay extends Fragment implements View.OnClickListener{
     protected TextView tvLivesRem;
     protected TextView tvStart;
+    protected TextView tvScore;
     protected ImageButton ibPause;
     protected ImageView ivGameScreen;
     protected Bitmap bitmap;
@@ -37,9 +38,9 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
     public int midXCanvas;
     protected int x;
     protected int y;
+    protected int yPeluru;
     protected int xBos;
     protected int yBos;
-    protected int yPeluru;
     protected boolean gerak;
     protected BulletThread bulletThread;
     ArrayList<Bullet> bullets;
@@ -59,10 +60,10 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         //atribut initiated
         this.tvLivesRem = view.findViewById(R.id.tv_lives_remaining);
         this.ibPause = view.findViewById(R.id.btnpause);
+        this.tvScore = view.findViewById(R.id.tv_score);
         this.ivGameScreen = view.findViewById(R.id.ivGame);
         this.ibPause.setOnClickListener(this);
         this.uiThreadedWrapper=new UIThreadedWrapper(this);
-        this.ivGameScreen.setOnTouchListener(this);
         this.midXCanvas = 0;
         this.bullets = new ArrayList<>();
 
@@ -94,9 +95,8 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         this.x =(ivGameScreen.getWidth()/2-150);
         this.y =canvas.getHeight()-300;
         this.xBos =(canvas.getWidth()/2)-150;
-        this.yPeluru=(canvas.getWidth()/2)-150;
         Log.d("debug", "posisi x: " + canvas.getWidth());
-        Log.d("debug", "posisi y: " + canvas.getHeight());
+        Log.d("debug", "posisi y: " + y);
 
         this.player = new Player(x,y);
         this.bos = new Player(this.xBos,10);
@@ -123,8 +123,9 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
 
     public void resetCanvas(){
         //create game background
-        canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-
+        int colorBackground=ResourcesCompat.getColor(getResources(),R.color.hitam,null);
+//        canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        canvas.drawColor(colorBackground);
         //force draw
         this.ivGameScreen.invalidate();
     }
@@ -144,6 +145,11 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         Bitmap player;
         player = BitmapFactory.decodeResource(getResources(),R.drawable.player);
         this.canvas.drawBitmap(player,x,y,paint);
+//        Player player1 = new Player(xBos,-10);
+//        this.bulletThread.setPlayer(player1);
+//        for (int i = 0 ; i < this.bullets.size();i++){
+//            gambarPeluru(this.bullets.get(i).getX(),this.bullets.get(i).getY());
+//        }
     }
 
     public void setPlayer(Player player){
@@ -168,7 +174,7 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         MainActivity mainActivity = (MainActivity) getActivity();
         gambarBos(xBos,yBos);
         gambarPlayer(x+mainActivity.gerakKiriKanan(),y);
-        Player player1 = new Player(xBos,10);
+        Player player1 = new Player(x+mainActivity.gerakKiriKanan(),1200);
         this.bulletThread.setPlayer(player1);
         for (int i = 0 ; i < this.bullets.size();i++){
             gambarPeluru(this.bullets.get(i).getX(),this.bullets.get(i).getY());
@@ -211,26 +217,6 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener, 
         }
     }
 
-    @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        switch(motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                if(motionEvent.getX() <= this.midXCanvas) {
-                }
-                else if(motionEvent.getX() > this.midXCanvas) {
-                }
-                Log.d("touch_listener", "down");
-                break;
-            case MotionEvent.ACTION_UP:
-                Log.d("touch_listener", "up");
-                break;
-            case MotionEvent.ACTION_MOVE:
-                if(motionEvent.getX() >= this.midXCanvas) {
-                }
-                Log.d("touch_listener", "move");
-                break;
-        }
-        return true;
-    }
+
 }
 

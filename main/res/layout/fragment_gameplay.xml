@@ -24,7 +24,18 @@
                 android:layout_height="wrap_content"
                 android:text="3"
                 android:textSize="40dp"
+                android:layout_weight="1"
                 android:id="@+id/tv_lives_remaining"/>
+
+            <TextView
+                android:id="@+id/tv_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="5"
+                android:text="Score :"
+                android:textSize="30dp" />
+
         </LinearLayout>
 
         <ImageButton

@@ -63,10 +63,10 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     protected void onStart() {
         super.onStart();
         if (this.accelerometer != null) {
-            this.mSensorManager.registerListener(this, this.accelerometer, SensorManager.SENSOR_DELAY_UI);
+            this.mSensorManager.registerListener(this, this.accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         }
         if (this.magnetometer != null) {
-            this.mSensorManager.registerListener(this, this.magnetometer, SensorManager.SENSOR_DELAY_UI);
+            this.mSensorManager.registerListener(this, this.magnetometer, SensorManager.SENSOR_DELAY_FASTEST);
         }
     }
 
@@ -109,6 +109,12 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     }
 
     @Override
+    public void closeApp() {
+        this.moveTaskToBack(true);
+        this.finish();
+    }
+
+    @Override
     public void onSensorChanged(SensorEvent event) {
         int sensorType = event.sensor.getType();
         switch (sensorType) {
@@ -131,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             roll = 0;
         }
 
-        this.roll = (int)(roll*500);
+        this.roll = (int)(roll*300);
 
     }
 
