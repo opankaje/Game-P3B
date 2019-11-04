@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
@@ -36,13 +35,16 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
     protected boolean initiated;
     protected GameThread movePlayerThread;
     protected Player player;
+    public int midXCanvas;
     protected int x;
     protected int y;
+    protected int yPeluru;
     protected int xBos;
     protected int yBos;
     protected boolean gerak;
     protected BulletThread bulletThread;
-    protected ArrayList<Bullet> bullets;
+    ArrayList<Bullet> bullets;
+    protected int nyawa;
 
     public FragmentGameplay() {
         //empty constructor
@@ -61,13 +63,16 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
         this.ibPause = view.findViewById(R.id.btnpause);
         this.tvScore = view.findViewById(R.id.tv_score);
         this.ivGameScreen = view.findViewById(R.id.ivGame);
+        this.ibPause.setOnClickListener(this);
         this.uiThreadedWrapper=new UIThreadedWrapper(this);
+        this.midXCanvas = 0;
         this.bullets = new ArrayList<>();
 
         this.tvStart = view.findViewById(R.id.tv_start);
         this.tvStart.setOnClickListener(this);
         this.gerak = false;
         this.initiated = true;
+        this.nyawa=3;
         return view;
     }
 
@@ -98,8 +103,7 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
         this.player = new Player(x,y);
         this.bos = new Player(this.xBos,10);
         this.movePlayerThread = new GameThread(this.uiThreadedWrapper,bos);
-        this.bulletThread = new BulletThread(uiThreadedWrapper,bullets,bos,canvas.getHeight());
-        this.ibPause.setOnClickListener(this);
+        this.bulletThread = new BulletThread(uiThreadedWrapper,bullets,bos,canvas.getHeight(), this);
 
         //reset canvas
         resetCanvas();
@@ -122,8 +126,8 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
     public void resetCanvas(){
         //create game background
         int colorBackground=ResourcesCompat.getColor(getResources(),R.color.hitam,null);
+//        canvas.drawColor(0, PorterDuff.Mode.CLEAR);
         canvas.drawColor(colorBackground);
-
         //force draw
         this.ivGameScreen.invalidate();
     }
@@ -143,6 +147,11 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
         Bitmap player;
         player = BitmapFactory.decodeResource(getResources(),R.drawable.player);
         this.canvas.drawBitmap(player,x,y,paint);
+//        Player player1 = new Player(xBos,-10);
+//        this.bulletThread.setPlayer(player1);
+//        for (int i = 0 ; i < this.bullets.size();i++){
+//            gambarPeluru(this.bullets.get(i).getX(),this.bullets.get(i).getY());
+//        }
     }
 
     public void setPlayer(Player player){
@@ -150,7 +159,6 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
         //menggerakan bos
         if(gerak == false && this.xBos+170 < ivGameScreen.getWidth()){
             this.xBos+= player.getX();
-
         }else
         {
             gerak = true;
@@ -163,26 +171,34 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
             gerak=false;
         }
 
-        this.bos = new Player(xBos,yBos);
+        this.bos=new Player(xBos,yBos);
+//            if(this.bullets.get(i).getX()>=player.getX()&&this.bullets.get(i).getX()<=player.getY()+170){
+//                this.tvScore.setText("0");
+//            }
     }
 
-    public void  gamePlay(){
-        if(Integer.valueOf(this.tvLivesRem.getText().toString()) == 0){
-            MainActivity mainActivity = (MainActivity)getActivity();
-            mainActivity.changePage("gameOver");
-        }
-        else{
-            resetCanvas();
-            MainActivity mainActivity = (MainActivity) getActivity();
-            gambarBos(xBos,yBos);
-            gambarPlayer(x+mainActivity.gerakKiriKanan(),y);
-            Player player1 = new Player(x+mainActivity.gerakKiriKanan(),1200);
-            this.bulletThread.setPlayer(player1);
-            for (int i = 0 ; i < this.bullets.size();i++){
-                gambarPeluru(this.bullets.get(i).getX(),this.bullets.get(i).getY());
+    public void gamePlay(){
+        resetCanvas();
+        MainActivity mainActivity=(MainActivity)getActivity();
+        gambarBos(xBos,yBos);
+        gambarPlayer(x+mainActivity.gerakKiriKanan(),y);
+        Player player1=new Player(x+mainActivity.gerakKiriKanan(),1200);
+        this.bulletThread.setPlayer(player1);
+        for(int i=0;i<this.bullets.size();i++){
+            gambarPeluru(this.bullets.get(i).getX(),this.bullets.get(i).getY());
+            if(this.bullets.get(i).getX()>=this.bos.getX()&&this.bullets.get(i).getX()<=this.bos.getX()+170&&
+                    this.bullets.get(i).getY()==this.bos.getY()){
+                nyawa--;
+                this.bullets.remove(i);
+                if(nyawa>=0) {
+                    this.tvLivesRem.setText(nyawa + "");
+                }else{
+                    this.tvLivesRem.setText("0");
+                }
             }
         }
 
+        Log.d("Nilai x bos",""+this.bos.getX());
     }
 
     public void setArrBulList(ArrayList<Bullet> bulList){
@@ -191,15 +207,13 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
 
     public void setPelor(Bullet bullet){
         this.bullets.add(bullet);
-        for (int i = 0 ; i < this.bullets.size();i++){
+        for(int i=0;i<this.bullets.size();i++){
             gambarPeluru(this.bullets.get(i).getX(),this.bullets.get(i).getY());
         }
-
     }
 
     @Override
     public void onClick(View view) {
-
         if(view.getId() == this.tvStart.getId()) {
             this.tvStart.setText("");
             initiated = false;
@@ -212,17 +226,21 @@ public class FragmentGameplay extends Fragment implements View.OnClickListener{
                 initiated = true;
                 this.movePlayerThread.tanda =false;
                 this.bulletThread.tanda = false;
+                Log.d("test","play");
             }else {
                 ibPause.setImageResource(android.R.drawable.ic_media_pause);
                 initiated = false;
                 movePlayerThread.tanda =true;
                 this.bulletThread.tanda =true;
+                Log.d("test","pause");
 
             }
 
         }
     }
 
-
+    public void changeScore(String score) {
+        this.tvScore.setText("Score : " + score);
+    }
 }
 
