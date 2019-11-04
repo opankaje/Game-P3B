@@ -32,17 +32,17 @@ public class BulletThread implements Runnable{
             if(tanda == true){
 
                 for (int i = 0; i < this.bullets.size(); i++) {
-                    if(this.bullets.get(i).getY()>ukuranCanvas){
+                    if(this.bullets.get(i).getY()<100){
                         this.bullets.remove(i);
                         continue;
                     }
-                    this.bullets.get(i).setY(this.bullets.get(i).getY() - 500);
+                    this.bullets.get(i).setY(this.bullets.get(i).getY() - 50);
                 }
                 this.uiThreadedWrapper.setArrBullet(this.bullets);
 
                 try {
-                    Thread.sleep(500);
-                    Bullet bullet = new Bullet(player.getX()+220,1600);
+                    Thread.sleep(100);
+                    Bullet bullet = new Bullet(player.getX()+180,1600);
                     this.uiThreadedWrapper.setBullet1(bullet);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -64,6 +64,10 @@ public class BulletThread implements Runnable{
 
     public void startLagi(){
         thread.run();
+    }
+
+    public void stop(){
+        thread.interrupt();
     }
 
 }

@@ -39,5 +39,9 @@ public class GameThread implements Runnable{
             }
     }
 
+
+    public void stop(){
+        thread.interrupt();
+    }
 }
 

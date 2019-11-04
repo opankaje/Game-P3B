@@ -28,6 +28,8 @@ public class UIThreadedWrapper extends Handler {
             ArrayList<Bullet> bullet=(ArrayList) msg.obj;
             this.fragmentGameplay.setArrBulList(bullet);
         }
+
+        this.fragmentGameplay.gamePlay();
     }
     public void setPlayer1(Player player){
         Message msg=new Message();
