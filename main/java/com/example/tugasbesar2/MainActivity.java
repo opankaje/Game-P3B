@@ -20,7 +20,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     protected FragmentGameplay fragmentGameplay;
     protected FragmentMainMenu fragmentMainMenu;
     protected FragmentManager fragmentManager;
-    protected GameOverFragment gameOverFragment;
     protected ArrayList<Fragment> halamanFragment;
     private SensorManager mSensorManager;
     private Sensor accelerometer;
@@ -38,7 +37,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         this.halamanFragment = new ArrayList<>();
         this.fragmentGameplay = new FragmentGameplay();
         this.fragmentMainMenu = new FragmentMainMenu();
-        this.gameOverFragment = new GameOverFragment();
         this.fragmentManager = this.getSupportFragmentManager();
 
         mSensorManager = (SensorManager) getSystemService(
@@ -52,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         //put fragment in array
         halamanFragment.add(fragmentGameplay);
         halamanFragment.add(fragmentMainMenu);
-        halamanFragment.add(gameOverFragment);
 
         //begin transaction
         FragmentTransaction ft = this.fragmentManager.beginTransaction();
@@ -104,19 +101,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
             }
             for(int i = 0 ; i < halamanFragment.size();i++){
                 if(halamanFragment.get(i) != this.fragmentMainMenu){
-                    ft.hide(halamanFragment.get(i));
-                }
-            }
-        }
-        else if(halaman.equalsIgnoreCase("gameOver")){
-            if(this.gameOverFragment.isAdded()){
-                ft.show(this.gameOverFragment);
-            }
-            else{
-                ft.add(R.id.fragment_container,this.gameOverFragment);
-            }
-            for(int i = 0 ; i < halamanFragment.size();i++){
-                if(halamanFragment.get(i) != this.gameOverFragment){
                     ft.hide(halamanFragment.get(i));
                 }
             }

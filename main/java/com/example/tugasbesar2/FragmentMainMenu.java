@@ -65,5 +65,4 @@ public class FragmentMainMenu extends Fragment implements View.OnClickListener{
             fragmentCommunication.closeApp();
         }
     }
-
 }
